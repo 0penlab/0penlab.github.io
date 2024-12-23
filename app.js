@@ -1,41 +1,28 @@
-// 初始化最近使用的工具列表
-let recentTools = JSON.parse(localStorage.getItem("recentTools")) || [];
+// 模拟工具点击历史
+let recentHistory = [];
 
-// 更新最近使用工具的UI
-function updateRecentTools() {
-    const recentToolsList = document.getElementById('recent-tools-list');
-    recentToolsList.innerHTML = ''; // 清空当前列表
+// 更新页面显示的最近使用的工具记录
+function updateRecentHistory() {
+  const historyList = document.getElementById('recent-history');
+  historyList.innerHTML = ''; // 清空当前记录
 
-    if (recentTools.length === 0) {
-        recentToolsList.innerHTML = '<li>暂无最近使用记录</li>';
-    } else {
-        recentTools.forEach(tool => {
-            const li = document.createElement('li');
-            li.innerHTML = `${tool} <button class="use-again" onclick="useTool('${tool}')">再次使用</button>`;
-            recentToolsList.appendChild(li);
-        });
-    }
+  recentHistory.slice(0, 5).forEach((tool) => { // 只显示最近5个工具
+    const listItem = document.createElement('li');
+    listItem.textContent = tool;
+    historyList.appendChild(listItem);
+  });
 }
 
-// 清除最近使用记录
-document.getElementById('clear-recent').addEventListener('click', () => {
-    localStorage.removeItem('recentTools');
-    recentTools = [];
-    updateRecentTools();
+// 监听工具点击事件
+document.querySelectorAll('.tool-link').forEach((toolLink) => {
+  toolLink.addEventListener('click', (e) => {
+    const toolName = e.target.getAttribute('data-tool-name');
+    // 将工具记录到历史中
+    recentHistory.unshift(toolName); // 将新工具添加到历史顶部
+    recentHistory = recentHistory.slice(0, 5); // 限制最多保存5条历史记录
+    updateRecentHistory();
+  });
 });
 
-// 模拟用户点击工具，记录最近使用的工具
-function useTool(toolName) {
-    if (!recentTools.includes(toolName)) {
-        recentTools.push(toolName);
-    }
-    // 保证只保存最近的5条记录
-    if (recentTools.length > 5) {
-        recentTools.shift();
-    }
-    localStorage.setItem('recentTools', JSON.stringify(recentTools));
-    updateRecentTools();
-}
-
-// 初次加载时更新最近使用的工具列表
-updateRecentTools();
+// 初始化
+document.addEventListener('DOMContentLoaded', updateRecentHistory);
