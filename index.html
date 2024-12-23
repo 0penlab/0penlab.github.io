@@ -7,42 +7,47 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">工具站</div>
-        <nav>
-            <ul>
-                <li><a href="#">首页</a></li>
-                <li><a href="#">工具分类</a></li>
-                <li><a href="#">关于</a></li>
-            </ul>
-        </nav>
-    </header>
+    <div class="container">
+        <!-- 头部导航 -->
+        <header>
+            <div class="logo">工具站</div>
+            <nav>
+                <ul>
+                    <li><a href="#">首页</a></li>
+                    <li><a href="#">工具分类</a></li>
+                    <li><a href="#">关于</a></li>
+                </ul>
+            </nav>
+        </header>
 
-    <main>
-        <section class="recent-tools">
-            <h2>最近使用的工具</h2>
-            <ul id="recent-tools-list">
-                <!-- 最近使用的工具会动态加载 -->
-            </ul>
-            <button id="clear-recent">清除记录</button>
-        </section>
+        <!-- 主体内容 -->
+        <main>
+            <section class="recent-tools">
+                <h2>最近使用的工具</h2>
+                <ul id="recent-tools-list">
+                    <!-- 最近使用的工具会动态加载 -->
+                </ul>
+                <button id="clear-recent">清除记录</button>
+            </section>
 
-        <section class="tools">
-            <h2>工具</h2>
-            <div class="tool" onclick="useTool('工具1')">
-                <h3>工具1</h3>
-                <p>这是工具1的简短描述。点击使用。</p>
-            </div>
-            <div class="tool" onclick="useTool('工具2')">
-                <h3>工具2</h3>
-                <p>这是工具2的简短描述。点击使用。</p>
-            </div>
-        </section>
-    </main>
+            <section class="tools">
+                <h2>工具</h2>
+                <div class="tool" onclick="useTool('工具1')">
+                    <h3>工具1</h3>
+                    <p>这是工具1的简短描述。点击使用。</p>
+                </div>
+                <div class="tool" onclick="useTool('工具2')">
+                    <h3>工具2</h3>
+                    <p>这是工具2的简短描述。点击使用。</p>
+                </div>
+            </section>
+        </main>
 
-    <footer>
-        <p>&copy; 2024 工具站 | 隐私政策 | 使用条款</p>
-    </footer>
+        <!-- 页脚 -->
+        <footer>
+            <p>&copy; 2024 工具站 | 隐私政策 | 使用条款</p>
+        </footer>
+    </div>
 
     <script src="app.js"></script>
 </body>
