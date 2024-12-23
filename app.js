@@ -1,45 +1,139 @@
-// 初始化最近使用的工具列表
-let recentTools = JSON.parse(localStorage.getItem("recentTools")) || [];
-
-// 更新最近使用工具的UI
-function updateRecentTools() {
-    const recentToolsList = document.getElementById('recent-tools-list');
-    recentToolsList.innerHTML = ''; // 清空当前列表
-
-    if (recentTools.length === 0) {
-        recentToolsList.innerHTML = '<li>暂无最近使用记录</li>';
-    } else {
-        recentTools.forEach(tool => {
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="tool-icon">🛠️</span> ${tool}`;
-            recentToolsList.appendChild(li);
-        });
-    }
+/* 通用样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-// 清除最近使用记录
-document.getElementById('clear-recent').addEventListener('click', () => {
-    localStorage.removeItem('recentTools');
-    recentTools = [];
-    updateRecentTools();
-});
-
-// 模拟用户点击工具，更新最近使用记录
-function addToolToRecent(toolName) {
-    if (!recentTools.includes(toolName)) {
-        recentTools.push(toolName);
-    }
-    // 保证只保存最近的5条记录
-    if (recentTools.length > 5) {
-        recentTools.shift();
-    }
-    localStorage.setItem('recentTools', JSON.stringify(recentTools));
-    updateRecentTools();
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
 }
 
-// 示例：用户点击工具1，记录到最近使用工具
-addToolToRecent('工具1');
-addToolToRecent('工具2');
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #333;
+    padding: 10px 20px;
+    color: white;
+}
 
-// 初次加载时更新最近使用的工具列表
-updateRecentTools();
+header .logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+header nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+/* 主体部分 */
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 最近使用的工具 */
+.recent-tools {
+    margin-bottom: 40px;
+}
+
+.recent-tools h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.recent-tools ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.recent-tools li {
+    background-color: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.recent-tools #clear-recent {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #FF6347;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.recent-tools #clear-recent:hover {
+    background-color: #FF4500;
+}
+
+/* 工具部分 */
+.tools {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.tool {
+    background-color: white;
+    width: 250px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.tool:hover {
+    transform: translateY(-10px);
+}
+
+.tool h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.tool p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* 底部 */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .tools {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .tool {
+        width: 100%;
+        max-width: 300px;
+    }
+}
