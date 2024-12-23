@@ -7,15 +7,16 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #f9f9f9;
     color: #333;
+    line-height: 1.6;
 }
 
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #4CAF50;
+    background-color: #333;
     padding: 10px 20px;
     color: white;
 }
@@ -37,15 +38,11 @@ header nav a {
     font-size: 16px;
 }
 
-header .search input {
-    padding: 8px;
-    border-radius: 5px;
-    border: none;
-}
-
 /* 主体部分 */
 main {
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* 最近使用的工具 */
@@ -65,17 +62,12 @@ main {
 }
 
 .recent-tools li {
-    background-color: white;
+    background-color: #fff;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 5px;
     display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.recent-tools li .tool-icon {
-    font-size: 24px;
+    justify-content: space-between;
 }
 
 .recent-tools #clear-recent {
@@ -92,38 +84,34 @@ main {
     background-color: #FF4500;
 }
 
-/* 推荐工具 */
-.recommended-tools {
+/* 工具部分 */
+.tools {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
 }
 
-.tool-card {
+.tool {
     background-color: white;
-    width: 200px;
-    padding: 15px;
+    width: 250px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease;
     text-align: center;
-    transition: transform 0.3s;
 }
 
-.tool-card:hover {
+.tool:hover {
     transform: translateY(-10px);
 }
 
-.tool-card .tool-icon {
-    font-size: 40px;
+.tool h3 {
+    font-size: 18px;
     margin-bottom: 10px;
 }
 
-.tool-card h3 {
-    font-size: 18px;
-    margin-bottom: 5px;
-}
-
-.tool-card p {
+.tool p {
     font-size: 14px;
     color: #555;
 }
@@ -139,12 +127,12 @@ footer {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .recommended-tools {
+    .tools {
         flex-direction: column;
         align-items: center;
     }
 
-    .tool-card {
+    .tool {
         width: 100%;
         max-width: 300px;
     }
