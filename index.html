@@ -256,8 +256,18 @@
                     e.stopPropagation();
                     deleteRecentTool(tool.id);
                 };
+
+                const fixBtn = document.createElement('button');
+                fixBtn.textContent = "\u{1F4CC}";
+                fixBtn.className = 'fix-btn'
+                fixBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    //fixRecentTool(tool.id);
+                };
                 
                 li.appendChild(a);
+                li.appendChild(fixBtn);
                 li.appendChild(deleteBtn);
                 recentToolsList.appendChild(li);
             });
