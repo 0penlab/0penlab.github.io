@@ -13,12 +13,9 @@
             <ul>
                 <li><a href="#">首页</a></li>
                 <li><a href="#">工具分类</a></li>
-                <li><a href="#">文档中心</a></li>
+                <li><a href="#">关于</a></li>
             </ul>
         </nav>
-        <div class="search">
-            <input type="text" id="search-input" placeholder="搜索工具...">
-        </div>
     </header>
 
     <main>
@@ -30,23 +27,16 @@
             <button id="clear-recent">清除记录</button>
         </section>
 
-        <section class="recommended-tools">
-            <h2>推荐工具</h2>
-            <div class="tool-card">
-                <div class="tool-icon">🔧</div>
-                <div class="tool-info">
-                    <h3>工具1</h3>
-                    <p>这是工具1的简短描述。</p>
-                </div>
+        <section class="tools">
+            <h2>工具</h2>
+            <div class="tool" onclick="useTool('工具1')">
+                <h3>工具1</h3>
+                <p>这是工具1的简短描述。点击使用。</p>
             </div>
-            <div class="tool-card">
-                <div class="tool-icon">🔨</div>
-                <div class="tool-info">
-                    <h3>工具2</h3>
-                    <p>这是工具2的简短描述。</p>
-                </div>
+            <div class="tool" onclick="useTool('工具2')">
+                <h3>工具2</h3>
+                <p>这是工具2的简短描述。点击使用。</p>
             </div>
-            <!-- 更多工具卡片 -->
         </section>
     </main>
 
