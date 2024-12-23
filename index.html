@@ -1,54 +1,46 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工具站首页</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具站</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- 头部导航 -->
-        <header>
-            <div class="logo">工具站</div>
-            <nav>
-                <ul>
-                    <li><a href="#">首页</a></li>
-                    <li><a href="#">工具分类</a></li>
-                    <li><a href="#">关于</a></li>
-                </ul>
-            </nav>
-        </header>
+  <header>
+    <h1>工具站</h1>
+    <nav>
+      <ul>
+        <li><a href="/">首页</a></li>
+        <li><a href="/tools">工具列表</a></li>
+        <li><a href="/history">历史记录</a></li>
+      </ul>
+    </nav>
+  </header>
 
-        <!-- 主体内容 -->
-        <main>
-            <section class="recent-tools">
-                <h2>最近使用的工具</h2>
-                <ul id="recent-tools-list">
-                    <!-- 最近使用的工具会动态加载 -->
-                </ul>
-                <button id="clear-recent">清除记录</button>
-            </section>
+  <main>
+    <section id="recent-tools">
+      <h2>最近使用的工具</h2>
+      <ul id="recent-history">
+        <!-- 最近使用工具记录 -->
+      </ul>
+    </section>
 
-            <section class="tools">
-                <h2>工具</h2>
-                <div class="tool" onclick="useTool('工具1')">
-                    <h3>工具1</h3>
-                    <p>这是工具1的简短描述。点击使用。</p>
-                </div>
-                <div class="tool" onclick="useTool('工具2')">
-                    <h3>工具2</h3>
-                    <p>这是工具2的简短描述。点击使用。</p>
-                </div>
-            </section>
-        </main>
+    <section id="tools-list">
+      <h2>可用工具</h2>
+      <ul>
+        <li><a href="/tools/1" class="tool-link" data-tool-name="计算器">计算器</a></li>
+        <li><a href="/tools/2" class="tool-link" data-tool-name="日历">日历</a></li>
+        <li><a href="/tools/3" class="tool-link" data-tool-name="转换器">单位转换器</a></li>
+        <!-- 添加更多工具 -->
+      </ul>
+    </section>
+  </main>
 
-        <!-- 页脚 -->
-        <footer>
-            <p>&copy; 2024 工具站 | 隐私政策 | 使用条款</p>
-        </footer>
-    </div>
+  <footer>
+    <p>&copy; 2024 工具站</p>
+  </footer>
 
-    <script src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
