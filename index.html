@@ -98,20 +98,30 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 2px 0;
+            padding: 2px 5px;
+            margin: 2px 0;
+            background-color: #f4f4f4;
         }
         
-        .recent-tools li:hover {
-            background-color: #efefef;
+        .recent-tools li.pinned {
+            background-color: #ffffd9;
+            border-left: 2px solid #ff6b6b;
         }
         
-        .recent-tools li a {
+        .tool-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        .tool-name {
+            flex-grow: 1;
             color: #00e;
             text-decoration: none;
             font-size: 13px;
         }
         
-        .delete-btn {
+        .pin-btn, .delete-btn {
             color: #666;
             cursor: pointer;
             font-size: 12px;
@@ -120,8 +130,12 @@
             background: none;
         }
         
-        .delete-btn:hover {
+        .pin-btn:hover, .delete-btn:hover {
             color: #f00;
+        }
+        
+        .pin-btn.pinned {
+            color: #ff6b6b;
         }
         
         @media (max-width: 600px) {
@@ -192,30 +206,40 @@
     </div>
 
     <script>
+        // 工具点击处理函数
+        function handleToolClick(toolName, toolId) {
+            addToRecentTools(toolName, toolId);
+            alert(`工具 "${toolName}" 即将实现`);
+        }
+
         // 存储最近使用的工具
         function addToRecentTools(toolName, toolId) {
             let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
+            const existingTool = recentTools.find(tool => tool.id === toolId);
             
-            // 移除已存在的相同工具
-            recentTools = recentTools.filter(tool => tool.id !== toolId);
+            if (existingTool) {
+                const isPinned = existingTool.pinned || false;
+                recentTools = recentTools.filter(tool => tool.id !== toolId);
+                recentTools.unshift({
+                    name: toolName,
+                    id: toolId,
+                    timestamp: new Date().toISOString(),
+                    pinned: isPinned
+                });
+            } else {
+                recentTools.unshift({
+                    name: toolName,
+                    id: toolId,
+                    timestamp: new Date().toISOString(),
+                    pinned: false
+                });
+            }
             
-            // 添加新工具到开头
-            recentTools.unshift({
-                name: toolName,
-                id: toolId,
-                timestamp: new Date().toISOString()
-            });
-            
-            // 只保留最近的5个工具
-            recentTools = recentTools.slice(0, 15);
-            
-            // 保存到localStorage
+            recentTools = recentTools.slice(0, 5);
             localStorage.setItem('recentTools', JSON.stringify(recentTools));
-            
-            // 更新显示
             updateRecentToolsList();
         }
-        
+
         // 删除最近使用的工具
         function deleteRecentTool(toolId) {
             let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
@@ -223,7 +247,29 @@
             localStorage.setItem('recentTools', JSON.stringify(recentTools));
             updateRecentToolsList();
         }
-        
+
+        // 切换工具的置顶状态
+        function togglePinTool(toolId) {
+            let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
+            recentTools = recentTools.map(tool => {
+                if (tool.id === toolId) {
+                    return { ...tool, pinned: !tool.pinned };
+                }
+                return tool;
+            });
+            
+            // 重新排序：置顶的排在前面
+            recentTools.sort((a, b) => {
+                if (a.pinned === b.pinned) {
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                }
+                return b.pinned - a.pinned;
+            });
+            
+            localStorage.setItem('recentTools', JSON.stringify(recentTools));
+            updateRecentToolsList();
+        }
+
         // 更新最近使用工具列表显示
         function updateRecentToolsList() {
             const recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
@@ -238,60 +284,64 @@
                 recentToolsList.appendChild(li);
                 return;
             }
-            
+
             recentTools.forEach(tool => {
                 const li = document.createElement('li');
-                
+                if (tool.pinned) {
+                    li.classList.add('pinned');
+                }
+
                 const a = document.createElement('a');
                 a.href = '#';
+                a.className = 'tool-name';
                 a.textContent = tool.name;
-                a.className = 'tool-link';
-                a.dataset.tool = tool.id;
-                
+                a.onclick = (e) => {
+                    e.preventDefault();
+                    handleToolClick(tool.name, tool.id);
+                };
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'tool-actions';
+
+                const pinBtn = document.createElement('button');
+                pinBtn.textContent = tool.pinned ? '⭐' : '☆';
+                pinBtn.className = `pin-btn ${tool.pinned ? 'pinned' : ''}`;
+                pinBtn.title = tool.pinned ? '取消置顶' : '置顶';
+                pinBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    togglePinTool(tool.id);
+                };
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = '×';
                 deleteBtn.className = 'delete-btn';
+                deleteBtn.title = '删除';
                 deleteBtn.onclick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     deleteRecentTool(tool.id);
                 };
 
-                const fixBtn = document.createElement('button');
-                fixBtn.textContent = "\u{1F4CC}";
-                fixBtn.className = 'fix-btn'
-                fixBtn.onclick = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    //fixRecentTool(tool.id);
-                };
-                
+                actionsDiv.appendChild(pinBtn);
+                actionsDiv.appendChild(deleteBtn);
                 li.appendChild(a);
-                li.appendChild(fixBtn);
-                li.appendChild(deleteBtn);
+                li.appendChild(actionsDiv);
                 recentToolsList.appendChild(li);
             });
         }
-        
-        // 为所有工具链接添加点击事件
+
+        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             const toolLinks = document.querySelectorAll('.tool-link');
             
             toolLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const toolId = this.dataset.tool;
-                    const toolName = this.textContent;
-                    
-                    // 记录工具使用
-                    addToRecentTools(toolName, toolId);
-                    
-                    // 这里可以添加工具的具体实现
-                    alert(`工具 "${toolName}" 即将实现`);
+                    handleToolClick(this.textContent, this.dataset.tool);
                 });
             });
             
-            // 初始化显示最近使用的工具
             updateRecentToolsList();
         });
     </script>
