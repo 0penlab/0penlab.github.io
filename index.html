@@ -304,7 +304,7 @@
                 actionsDiv.className = 'tool-actions';
 
                 const pinBtn = document.createElement('button');
-                pinBtn.textContent = tool.pinned ? '⭐' : '☆';
+                pinBtn.textContent = tool.pinned ? '★' : '☆';
                 pinBtn.className = `pin-btn ${tool.pinned ? 'pinned' : ''}`;
                 pinBtn.title = tool.pinned ? '取消置顶' : '置顶';
                 pinBtn.onclick = (e) => {
