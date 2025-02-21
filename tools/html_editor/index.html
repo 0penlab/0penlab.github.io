@@ -1,0 +1,61 @@
+<!doctype html>
+
+<html>
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>HTML Editor</title>
+        <link rel="stylesheet" href="index.css">
+    </head>
+
+    <body>
+
+<textarea id=data><!doctype html>
+<html>
+ <body>
+
+  <style>
+    body {
+      padding: 50px;
+    }
+    span {
+      display: inline-block;
+      background: #a0ffa0;
+      padding: 20px;
+    }
+  </style>
+
+  <span>
+    Edit the page on top, see
+    the result on the bottom.
+  </span>
+
+ </body>
+</html></textarea>
+
+        <div class=controls>
+            <label>
+                <input type=checkbox id=realtime onclick="update()" checked>
+                Realtime
+            </label> |
+            <select id="layout" onchange="updateLayout()">
+                <option value="vertical">Vertical</option>
+                <option value="horizontal">Horizontal</option>
+                <option value="edit only">Edit Only</option>
+            </select> | <label>Font Size: <input type="number" id="fontSize" value="14" onchange="changeFontSize()" style="width:50px;"></label> |
+            <span onClick="update()">Update</span> |
+            <span onClick="goFullscreen()" >Fullscreen</span> |
+            <span onClick="render()" >Render</span> |
+            <span onClick="clearData()" >Clear</span> |
+            <a href="https://github.com/no-gravity/html_editor"
+               target=_blank>Github</a> |
+            <a href="https://www.gibney.org" target="_blank">Made by MG</a></span>
+        </div>
+        <iframe id=resulframe></iframe>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js" integrity="sha512-01CJ9/g7e8cUmY0DFTMcUw/ikS799FHiOA0eyHsUWfOetgbx/t6oV4otQ5zXKQyIrQGTHSmRVPIgrgLcZi/WMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="index.js"></script>
+
+    </body>
+</html>
