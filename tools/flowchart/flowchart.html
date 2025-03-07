@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流程图绘制工具</title>
+    <script src="mermaid.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 10px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 98vh;
+            gap: 8px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        h1 {
+            font-size: 18px;
+            color: #333;
+            margin-right: 20px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .templates {
+            display: flex;
+            gap: 8px;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .templates button {
+            background-color: #2196F3;
+        }
+        .templates button:hover {
+            background-color: #0b7dda;
+        }
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: 10px;
+        }
+        .zoom-controls button {
+            padding: 2px 6px;
+            background-color: #9C27B0;
+        }
+        .zoom-controls button:hover {
+            background-color: #7B1FA2;
+        }
+        .editor-container {
+            display: flex;
+            flex-grow: 1;
+            position: relative;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .code-editor {
+            width: 50%;
+            height: 100%;
+            font-family: monospace;
+            padding: 8px;
+            resize: none;
+            border: none;
+            background-color: #f8f8f8;
+            outline: none;
+        }
+        .preview-container {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            overflow: auto;
+            background-color: white;
+        }
+        .preview {
+            padding: 8px;
+            transition: transform 0.1s ease;
+            transform-origin: top left;
+        }
+        .resize-handle {
+            width: 8px;
+            height: 100%;
+            background-color: #ddd;
+            cursor: col-resize;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        .resize-handle:hover, .resize-handle.active {
+            opacity: 0.8;
+            background-color: #2196F3;
+        }
+        .resize-handle-v {
+            width: 100%;
+            height: 8px;
+            background-color: #ddd;
+            cursor: row-resize;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        .resize-handle-v:hover, .resize-handle-v.active {
+            opacity: 0.8;
+            background-color: #2196F3;
+        }
+        /* 用于显示导出设置的模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            border-radius: 5px;
+        }
+        .modal-content h3 {
+            margin-bottom: 15px;
+        }
+        .export-option {
+            margin-bottom: 10px;
+        }
+        .export-option label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .export-option input {
+            width: 100%;
+            padding: 5px;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>流程图绘制工具</h1>
+            <div class="toolbar">
+                <div class="zoom-controls">
+                    <button id="zoom-out">-</button>
+                    <span id="zoom-level">100%</span>
+                    <button id="zoom-in">+</button>
+                    <button id="zoom-reset">重置</button>
+                </div>
+                <button id="save-btn">导出图片</button>
+                <div class="templates">
+                    <button id="template-flowchart">流程图</button>
+                    <button id="template-sequence">时序图</button>
+                    <button id="template-class">类图</button>
+                    <button id="template-state">状态图</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="editor-container">
+            <textarea id="code-editor" class="code-editor" placeholder="在这里输入Mermaid代码...">flowchart TD
+    A[开始] --> B{判断条件}
+    B -->|是| C[处理1]
+    B -->|否| D[处理2]
+    C --> E[结束]
+    D --> E</textarea>
+            <div id="resize-handle" class="resize-handle"></div>
+            <div id="preview-container" class="preview-container">
+                <div id="preview" class="preview">
+                    <div id="mermaid-diagram" class="mermaid">
+                        flowchart TD
+                            A[开始] --> B{判断条件}
+                            B -->|是| C[处理1]
+                            B -->|否| D[处理2]
+                            C --> E[结束]
+                            D --> E
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="resize-handle-v" class="resize-handle-v"></div>
+    </div>
+
+    <!-- 导出设置模态框 -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>图片导出设置</h3>
+            <div class="export-option">
+                <label for="export-scale">图片缩放比例 (1-5)</label>
+                <input type="number" id="export-scale" min="1" max="5" step="0.5" value="2">
+            </div>
+            <div class="export-option">
+                <label for="export-filename">文件名</label>
+                <input type="text" id="export-filename" value="流程图">
+            </div>
+            <div class="modal-buttons">
+                <button id="cancel-export">取消</button>
+                <button id="confirm-export">导出</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true
+            }
+        });
+
+        // 获取DOM元素
+        const codeEditor = document.getElementById('code-editor');
+        const saveBtn = document.getElementById('save-btn');
+        const preview = document.getElementById('preview');
+        const previewContainer = document.getElementById('preview-container');
+        const resizeHandle = document.getElementById('resize-handle');
+        const resizeHandleV = document.getElementById('resize-handle-v');
+        const editorContainer = document.querySelector('.editor-container');
+        const container = document.querySelector('.container');
+        
+        // 缩放控件
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const zoomResetBtn = document.getElementById('zoom-reset');
+        const zoomLevelDisplay = document.getElementById('zoom-level');
+        
+        // 模态框元素
+        const exportModal = document.getElementById('export-modal');
+        const closeModal = document.querySelector('.close');
+        const cancelExport = document.getElementById('cancel-export');
+        const confirmExport = document.getElementById('confirm-export');
+        const exportScale = document.getElementById('export-scale');
+        const exportFilename = document.getElementById('export-filename');
+
+        // 模板按钮
+        const templateFlowchart = document.getElementById('template-flowchart');
+        const templateSequence = document.getElementById('template-sequence');
+        const templateClass = document.getElementById('template-class');
+        const templateState = document.getElementById('template-state');
+
+        // 缩放状态
+        let currentZoom = 1.0;
+
+        // 渲染图表函数
+        function renderDiagram() {
+            try {
+                const code = codeEditor.value;
+                preview.innerHTML = '<div id="mermaid-diagram" class="mermaid">' + code + '</div>';
+                mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+                applyZoom(); // 保持缩放比例
+            } catch (error) {
+                preview.innerHTML = '<div style="color: red;">错误: ' + error.message + '</div>';
+            }
+        }
+
+        // 设置缩放比例
+        function applyZoom() {
+            preview.style.transform = `scale(${currentZoom})`;
+            zoomLevelDisplay.textContent = `${Math.round(currentZoom * 100)}%`;
+        }
+
+        // 增加缩放
+        zoomInBtn.addEventListener('click', () => {
+            if (currentZoom < 3) {
+                currentZoom += 0.1;
+                applyZoom();
+            }
+        });
+
+        // 减少缩放
+        zoomOutBtn.addEventListener('click', () => {
+            if (currentZoom > 0.3) {
+                currentZoom -= 0.1;
+                applyZoom();
+            }
+        });
+
+        // 重置缩放
+        zoomResetBtn.addEventListener('click', () => {
+            currentZoom = 1.0;
+            applyZoom();
+        });
+
+        // 水平调整大小
+        let isResizingH = false;
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            isResizingH = true;
+            resizeHandle.classList.add('active');
+            document.addEventListener('mousemove', handleMouseMoveH);
+            document.addEventListener('mouseup', () => {
+                isResizingH = false;
+                resizeHandle.classList.remove('active');
+                document.removeEventListener('mousemove', handleMouseMoveH);
+            });
+            e.preventDefault();
+        });
+
+        function handleMouseMoveH(e) {
+            if (!isResizingH) return;
+            
+            const containerRect = editorContainer.getBoundingClientRect();
+            const x = e.clientX - containerRect.left;
+            const totalWidth = containerRect.width;
+            
+            // 确保编辑器和预览区域都至少占据总宽度的10%
+            if (x > totalWidth * 0.1 && x < totalWidth * 0.9) {
+                const editorWidthPercent = (x / totalWidth) * 100;
+                const previewWidthPercent = 100 - editorWidthPercent;
+                
+                codeEditor.style.width = `${editorWidthPercent}%`;
+                previewContainer.style.width = `${previewWidthPercent}%`;
+                
+                // 实时渲染
+                renderDiagram();
+            }
+        }
+
+        // 垂直调整大小
+        let isResizingV = false;
+
+        resizeHandleV.addEventListener('mousedown', (e) => {
+            isResizingV = true;
+            resizeHandleV.classList.add('active');
+            document.addEventListener('mousemove', handleMouseMoveV);
+            document.addEventListener('mouseup', () => {
+                isResizingV = false;
+                resizeHandleV.classList.remove('active');
+                document.removeEventListener('mousemove', handleMouseMoveV);
+            });
+            e.preventDefault();
+        });
+
+        function handleMouseMoveV(e) {
+            if (!isResizingV) return;
+            
+            const containerRect = container.getBoundingClientRect();
+            const editorContainerTop = editorContainer.getBoundingClientRect().top;
+            const y = e.clientY - editorContainerTop;
+            
+            const headerHeight = document.querySelector('.header').offsetHeight;
+            const minHeight = 100; // 最小高度
+            const maxHeight = containerRect.height - headerHeight - 30; // 最大高度
+            
+            // 确保高度在合理范围内
+            if (y > minHeight && y < maxHeight) {
+                editorContainer.style.height = `${y}px`;
+                
+                // 实时渲染
+                renderDiagram();
+            }
+        }
+
+        // 编辑器内容更改时自动渲染
+        codeEditor.addEventListener('input', renderDiagram);
+
+        // 打开导出设置模态框
+        saveBtn.addEventListener('click', () => {
+            exportModal.style.display = 'block';
+        });
+
+        // 关闭模态框
+        closeModal.addEventListener('click', () => {
+            exportModal.style.display = 'none';
+        });
+        
+        cancelExport.addEventListener('click', () => {
+            exportModal.style.display = 'none';
+        });
+
+        // 点击模态框外部关闭
+        window.addEventListener('click', (event) => {
+            if (event.target === exportModal) {
+                exportModal.style.display = 'none';
+            }
+        });
+
+        // 确认导出图片
+        confirmExport.addEventListener('click', () => {
+            const svgElement = preview.querySelector('svg');
+            if (svgElement) {
+                const scale = parseFloat(exportScale.value);
+                const filename = exportFilename.value || '流程图';
+                
+                // 创建一个克隆的SVG用于导出
+                const clonedSvg = svgElement.cloneNode(true);
+                
+                // 获取原始尺寸
+                const bbox = svgElement.getBBox();
+                const width = bbox.width;
+                const height = bbox.height;
+                
+                // 添加一些间距
+                const padding = 20;
+                
+                // 设置克隆SVG的尺寸
+                clonedSvg.setAttribute('width', width + padding * 2);
+                clonedSvg.setAttribute('height', height + padding * 2);
+                
+                // 调整视窗以包含全部内容
+                clonedSvg.setAttribute('viewBox', `${bbox.x - padding} ${bbox.y - padding} ${width + padding * 2} ${height + padding * 2}`);
+                
+                const svgData = new XMLSerializer().serializeToString(clonedSvg);
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    // 设置画布尺寸为放大后的尺寸
+                    canvas.width = (width + padding * 2) * scale;
+                    canvas.height = (height + padding * 2) * scale;
+                    
+                    // 填充白色背景
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 绘制SVG
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    // 导出为PNG
+                    const pngFile = canvas.toDataURL('image/png');
+                    const downloadLink = document.createElement('a');
+                    downloadLink.download = `${filename}.png`;
+                    downloadLink.href = pngFile;
+                    downloadLink.click();
+                    
+                    // 关闭模态框
+                    exportModal.style.display = 'none';
+                };
+                
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+            } else {
+                alert('无法导出：找不到SVG元素');
+                exportModal.style.display = 'none';
+            }
+        });
+
+        // 设置模板
+        templateFlowchart.addEventListener('click', () => {
+            codeEditor.value = `flowchart TD
+    A[开始] --> B{判断条件}
+    B -->|是| C[处理1]
+    B -->|否| D[处理2]
+    C --> E[结束]
+    D --> E`;
+            renderDiagram();
+        });
+
+        templateSequence.addEventListener('click', () => {
+            codeEditor.value = `sequenceDiagram
+    participant 用户
+    participant 系统
+    participant 数据库
+    
+    用户->>系统: 提交表单
+    系统->>数据库: 保存数据
+    数据库-->>系统: 返回结果
+    系统-->>用户: 显示成功信息`;
+            renderDiagram();
+        });
+
+        templateClass.addEventListener('click', () => {
+            codeEditor.value = `classDiagram
+    class 动物 {
+        +String 名称
+        +eat()
+        +sleep()
+    }
+    class 狗 {
+        +String 品种
+        +bark()
+    }
+    class 猫 {
+        +climb()
+        +meow()
+    }
+    动物 <|-- 狗
+    动物 <|-- 猫`;
+            renderDiagram();
+        });
+
+        templateState.addEventListener('click', () => {
+            codeEditor.value = `stateDiagram-v2
+    [*] --> 闲置
+    闲置 --> 处理中: 开始处理
+    处理中 --> 完成: 处理完成
+    处理中 --> 错误: 出现错误
+    错误 --> 闲置: 重置
+    完成 --> [*]`;
+            renderDiagram();
+        });
+
+        // 预览区域滚轮缩放
+        previewContainer.addEventListener('wheel', (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                
+                if (e.deltaY < 0 && currentZoom < 3) {
+                    currentZoom += 0.1;
+                } else if (e.deltaY > 0 && currentZoom > 0.3) {
+                    currentZoom -= 0.1;
+                }
+                
+                applyZoom();
+            }
+        });
+
+        // 初始渲染
+        renderDiagram();
+        
+        // 窗口改变大小时重新渲染
+        window.addEventListener('resize', renderDiagram);
+    </script>
+</body>
+</html>
