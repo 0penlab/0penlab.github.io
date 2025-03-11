@@ -76,14 +76,14 @@
             background-color: #efefef;
         }
         
-        .top-tools {
+        #recently.tool-list {
             background-color: #f4f4f4;
             padding: 8px;
             margin-bottom: 10px;
             border: 1px solid #fff;
         }
         
-        .top-tools h2 {
+        #recently.tool-list h2 {
             margin: 0 0 5px 0;
             font-size: 16px;
             color: #00e;
@@ -91,13 +91,13 @@
             padding-bottom: 3px;
         }
         
-        .top-tools ul {
+        #recently.tool-list ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
         
-        .top-tools li {
+        #recently.tool-list li {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -106,26 +106,26 @@
             background-color: #f4f4f4;
         }
 
-        .top-tools li a {
+        #recently.tool-list li a {
             color: #00e;
             text-decoration: none;
             font-size: 14px;
             display: block;
         }
         
-        .top-tools li a:hover {
+        #recently.tool-list li a:hover {
             text-decoration: underline;
             background-color: #efefef;
         }
 
-        .top-tools li.pinned {
+        #recently.tool-list li.pinned {
             background-color: #f4f4f4;
         }
         
         .tool-actions {
             display: flex;
             gap: 5px;
-            align-items: center;
+            align-items: baseline;
         }
         
         .tool-name {
@@ -175,164 +175,125 @@
     </div>
     
     <div class="tools-grid">
-        <div class="top-tools">
+        <div class="tool-category">
             <h2>最近使用的工具</h2>
-            <ul id="top-tools-list">
+            <ul class="tool-list" id="recently">
             </ul>
         </div>
         
         <div class="tool-category">
             <h2>文本工具</h2>
             <ul class="tool-list">
-                <li><a href="#" class="tool-link" data-tool="text-counter">字数统计</a></li>
-                <li><a href="#" class="tool-link" data-tool="text-converter">大小写转换</a></li>
-                <li><a href="#" class="tool-link" data-tool="text-diff">文本对比</a></li>
+                <li><a href="#" class="tool-link" id="text-counter">字数统计</a></li>
+                <li><a href="#" class="tool-link" id="text-converter">大小写转换</a></li>
+                <li><a href="#" class="tool-link" id="text-diff">文本对比</a></li>
             </ul>
         </div>
         
         <div class="tool-category">
             <h2>编码工具</h2>
             <ul class="tool-list">
-                <li><a href="#" class="tool-link" data-tool="base64">Base64 编码/解码</a></li>
-                <li><a href="#" class="tool-link" data-tool="url-encode">URL 编码/解码</a></li>
-                <li><a href="#" class="tool-link" data-tool="json-format">JSON 格式化</a></li>
-                <li><a href="#" class="tool-link" data-tool="Toml">Toml 编码/解码</a></li>
-                <li><a href="#" class="tool-link" data-tool="Yaml">Yaml 编码/解码</a></li>
-                <li><a href="#" class="tool-link" data-tool="Init">Init 格式化</a></li>
+                <li><a href="#" class="tool-link" id="base64">Base64 编码/解码</a></li>
+                <li><a href="#" class="tool-link" id="url-encode">URL 编码/解码</a></li>
+                <li><a href="#" class="tool-link" id="json-format">JSON 格式化</a></li>
+                <li><a href="#" class="tool-link" id="Toml">Toml 编码/解码</a></li>
+                <li><a href="#" class="tool-link" id="Yaml">Yaml 编码/解码</a></li>
+                <li><a href="#" class="tool-link" id="Init">Init 格式化</a></li>
             </ul>
         </div>
         
         <div class="tool-category">
             <h2>图片工具</h2>
             <ul class="tool-list">
-                <li><a href="#" class="tool-link" data-tool="image-compress">图片压缩</a></li>
-                <li><a href="#" class="tool-link" data-tool="image-convert">图片格式转换</a></li>
-                <li><a href="#" class="tool-link" data-tool="image-resize">图片尺寸调整</a></li>
+                <li><a href="#" class="tool-link" id="image-compress">图片压缩</a></li>
+                <li><a href="#" class="tool-link" id="image-convert">图片格式转换</a></li>
+                <li><a href="#" class="tool-link" id="image-resize">图片尺寸调整</a></li>
             </ul>
         </div>
         
         <div class="tool-category">
             <h2>开发工具</h2>
             <ul class="tool-list">
-                <li><a href="/tools/html_editor/" class="tool-link" data-tool="html_editor">HTML 编辑</a></li>
-                <li><a href="/tools/writer" class="tool-link" data-tool="writer">Text 编辑</a></li>
-                <li><a href="/tools/flowchart" class="tool-link" data-tool="flowchart">flowchart 流程图</a></li>
+                <li><a href="tools/html_editor/index.html" class="tool-link" id="html_editor">HTML 编辑</a></li>
+                <li><a href="tools/writer/index.html" class="tool-link" id="writer">Text 编辑</a></li>
+                <li><a href="tools/flowchart/index.html" class="tool-link" id="flowchart">flowchart 流程图</a></li>
             </ul>
         </div>
 
         <div class="tool-category">
             <h2>AI工具</h2>
             <ul class="tool-list">
-                <li><a href="#" class="tool-link" data-tool="bg-remove">图片去背景</a></li>
+                <li><a href="#" class="tool-link" id="bg-remove">图片去背景</a></li>
             </ul>
         </div>
     </div>
 
     <script>
-        function handleToolClick(toolName, toolId) {
-            addToTopTools(toolName, toolId);
-            alert(`工具 "${toolName}" 即将实现`);
+        function onToolLinkClick(toolId, toolUrl, toolText) {
+            window.open(toolUrl, "_blank");
         }
 
-        function pushTool(groupName, capacity, toolName, toolId) {
-            let tools = JSON.parse(localStorage.getItem(groupName) || '[]');
-            tools = tools.filter(tool => tool.id !== toolId);
-            tools.push({
-                name: toolName,
-                id: toolId,
-                timestamp: new Date().toISOString(),
-            });
-            if (capacity >= 0) {
-                tools = tools.slice(-capacity);
-            }            
-            localStorage.setItem(groupName, JSON.stringify(tools));
-        }
-
-        function deleteTool(groupName, toolId) {
-            let tools = JSON.parse(localStorage.getItem(groupName) || '[]');
-            tools = tools.filter(tool => tool.id !== toolId);
-            localStorage.setItem(groupName, JSON.stringify(tools));
-        }
-
-        function deleteTopTool(toolId) {
-            deleteTool('pinnedTools', toolId);
-            deleteTool('recentTools', toolId);
-            updateTopToolsList();
-        }
-
-        function addToTopTools(toolName, toolId) {
-            let pinnedTools = JSON.parse(localStorage.getItem('pinnedTools') || '[]');
-            const pinned = pinnedTools.find(tool => tool.id === toolId);
-            if (pinned) {
+        function addRecentlyTool(toolId, toolUrl, toolText) {
+            let recentlyTools = JSON.parse(localStorage.getItem('recentlyTools') || '[]');
+            const existed = recentlyTools.find(tool => tool.id === toolId);
+            if (existed) {
                 return;
             }
-            pushTool('recentTools', 5, toolName, toolId);
-            updateTopToolsList();
+            recentlyTools.push({
+                id: toolId,
+                url: toolUrl,
+                text: toolText,
+                pinned: false,
+                timestamp: new Date().toDateString(),
+            });
+            const pinned = recentlyTools.filter(tool => tool.pinned === true);
+            const unpinned = recentlyTools.filter(tool => tool.pinned !== true).slice(-5);
+            recentlyTools = [...pinned, ...unpinned];             
+            localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
+            updateRecentlyTools();
         }
 
-         function togglePinTool(toolId) {
-            let pinnedTools = JSON.parse(localStorage.getItem('pinnedTools') || '[]');
-            const pinned = pinnedTools.find(tool => tool.id === toolId);
-            if (pinned) {
-                pinnedTools.forEach(tool => {
-                    if (tool.id == toolId) {
-                        deleteTool('pinnedTools', toolId);
-                        pushTool('recentTools', 5, tool.name, toolId);
-                    }
-                });                
-            } else {
-                let recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
-                recentTools.forEach(tool => {
-                    if (tool.id == toolId) {
-                        deleteTool('recentTools', toolId);
-                        pushTool('pinnedTools', -1, tool.name, toolId);
-                    }
-                });                
-            }
-            updateTopToolsList();
+        function onRecentlyToolRemoveClick(toolId) {
+            let recentlyTools = JSON.parse(localStorage.getItem("recentlyTools") || '[]');
+            recentlyTools = recentlyTools.filter(tool => tool.id !== toolId);
+            localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
+            updateRecentlyTools();
         }
 
-        // 更新最近使用工具列表显示
-        function updateTopToolsList() {
-            pinnedTools = JSON.parse(localStorage.getItem('pinnedTools') || '[]');
-            recentTools = JSON.parse(localStorage.getItem('recentTools') || '[]');
+        function onRecentlyToolPinClick(toolId) {
+            let recentlyTools = JSON.parse(localStorage.getItem("recentlyTools") || '[]');
+            let tool = recentlyTools.find(tool => tool.id === toolId);
+            tool.pinned = !tool.pinned;
+            const pinned = recentlyTools.filter(tool => tool.pinned === true);
+            const unpinned = recentlyTools.filter(tool => tool.pinned !== true);
+            recentlyTools = [...pinned, ...unpinned];
+            localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
+            updateRecentlyTools();
+        }
 
-            const topToolsList = document.getElementById('top-tools-list');
-            topToolsList.innerHTML = '';
+        function updateRecentlyTools() {
+            let recentlyTools = JSON.parse(localStorage.getItem('recentlyTools') || '[]');
+            const recentlyToolList = document.querySelector("#recently.tool-list");
+            recentlyToolList.innerHTML = '';
 
-            if (pinnedTools.length == 0 && recentTools.length === 0) {
+            if (recentlyTools.length === 0) {
                 const li = document.createElement('li');
                 li.textContent = '暂无使用记录';
                 li.style.color = '#666';
-                topToolsList.appendChild(li);
+                recentlyToolList.appendChild(li);
                 return;
             }
 
-            pinnedTools = pinnedTools.map(tool => {
-                return { ...tool, pinned: true };
-            });
-            recentTools = recentTools.map(tool => {
-                return { ...tool, pinned: false };
-            });
-            topTools = [...pinnedTools, ...recentTools];
-
-            topTools.forEach(tool => {
-                const li = document.createElement('li');
-                if (tool.pinned) {
-                    li.classList.add('pinned');
-                }
-
+            recentlyTools.forEach(tool => {
                 const a = document.createElement('a');
-                a.href = '#';
-                a.className = 'tool-name';
-                a.textContent = tool.name;
+                a.href = tool.url;
+                a.class = 'tool-link';
+                a.id = tool.id;
+                a.textContent = tool.text;
                 a.onclick = (e) => {
                     e.preventDefault();
-                    handleToolClick(tool.name, tool.id);
+                    onToolLinkClick(tool.id, tool.url, tool.text);
                 };
-
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'tool-actions';
 
                 const pinBtn = document.createElement('button');
                 pinBtn.textContent = tool.pinned ? '★' : '☆';
@@ -341,7 +302,7 @@
                 pinBtn.onclick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    togglePinTool(tool.id);
+                    onRecentlyToolPinClick(tool.id);
                 };
 
                 const deleteBtn = document.createElement('button');
@@ -351,19 +312,31 @@
                 deleteBtn.onclick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    deleteTopTool(tool.id);
+                    onRecentlyToolRemoveClick(tool.id);
                 };
 
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'tool-actions';
                 actionsDiv.appendChild(pinBtn);
                 actionsDiv.appendChild(deleteBtn);
+
+                const li = document.createElement('li');
                 li.appendChild(a);
                 li.appendChild(actionsDiv);
-                topToolsList.appendChild(li);
+                recentlyToolList.appendChild(li);
             });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            updateTopToolsList();
+            const toolLinks = document.querySelectorAll('.tool-link');            
+            toolLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    onToolLinkClick(this.id, this.href, this.textContent);
+                    addRecentlyTool(this.id, this.href, this.textContent);
+                });
+            });
+            updateRecentlyTools();
         });
     </script>
 </body>
