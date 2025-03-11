@@ -236,7 +236,7 @@
         function addRecentlyTool(toolId, toolUrl, toolText) {
             let recentlyTools = JSON.parse(localStorage.getItem('recentlyTools') || '[]');
             const tool = recentlyTools.find(tool => tool.id === toolId);
-            if (tool != undefined) {
+            if (tool !== undefined) {
                 return;
             }
             recentlyTools.push({
