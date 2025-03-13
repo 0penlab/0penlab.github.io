@@ -76,6 +76,13 @@
             background-color: #efefef;
         }
         
+        .tool-link {
+            flex-grow: 1;
+            color: #00e;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
         #recently.tool-list {
             background-color: #f4f4f4;
             padding: 8px;
@@ -91,7 +98,12 @@
             margin: 2px 0;
             background-color: #f4f4f4;
         }
-
+        
+        #recently.tool-list li a:hover {
+            text-decoration: underline;
+            background-color: #efefef;
+        }
+        
         #recently.tool-list li.pinned {
             background-color: #f4f4f4;
         }
@@ -100,13 +112,6 @@
             display: flex;
             gap: 5px;
             align-items: baseline;
-        }
-        
-        .tool-link {
-            flex-grow: 1;
-            color: #00e;
-            text-decoration: none;
-            font-size: 14px;
         }
         
         .pin-btn, .delete-btn {
