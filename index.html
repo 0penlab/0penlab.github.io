@@ -270,7 +270,7 @@
             if (!tool.pinned) {
                 unpinned.push(tool);
             }
-            unpinned.slice(-5);
+            unpinned = unpinned.slice(-5);
             recentlyTools = [...pinned, ...unpinned];
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
