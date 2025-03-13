@@ -247,7 +247,8 @@
                 timestamp: new Date().toDateString(),
             });
             const pinned = recentlyTools.filter(tool => tool.pinned === true);
-            const unpinned = recentlyTools.filter(tool => tool.pinned !== true).slice(-5);
+            let unpinned = recentlyTools.filter(tool => tool.pinned !== true);
+            unpinned = unpinned.slice(-5);
             recentlyTools = [...pinned, ...unpinned];             
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
@@ -265,7 +266,11 @@
             let tool = recentlyTools.find(tool => tool.id === toolId);
             tool.pinned = !tool.pinned;
             const pinned = recentlyTools.filter(tool => tool.pinned === true);
-            const unpinned = recentlyTools.filter(tool => tool.pinned !== true);
+            let unpinned = recentlyTools.filter(tool => tool.pinned !== true && tool.id !== toolId);
+            if (!tool.pinned) {
+                unpinned.push(tool);
+            }
+            unpinned.slice(-5);
             recentlyTools = [...pinned, ...unpinned];
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
