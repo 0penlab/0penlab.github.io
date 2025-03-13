@@ -47,12 +47,23 @@
         .tool-category h2 {
             margin: 0 0 5px 0;
             font-size: 16px;
-            color: #00e;
             border-bottom: 1px solid #ccc;
             padding: 0px;
             background-color: #efefef;
         }
-        
+
+        .category-link {
+            flex-grow: 1;
+            color: #00e;
+            text-decoration: none;
+            display: block;
+        }
+
+        .category-link:hover {
+            text-decoration: underline;
+            background-color: #f4f4f4;
+        }
+
         .tool-list {
             list-style: none;
             padding: 0;
@@ -60,6 +71,9 @@
         }
         
         .tool-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin: 2px 0;
         }
         
@@ -68,8 +82,15 @@
             color: #00e;
             text-decoration: none;
             font-size: 14px;
+            display: block;
+            padding: 2px 0;
+            border-bottom: 1px solid #eaeaea;
         }
-        
+
+        .append {
+            margin-left: 10px;
+        }
+
         .tool-link:hover {
             text-decoration: underline;
             background-color: #efefef;
@@ -79,7 +100,7 @@
             background-color: #f4f4f4;
             padding: 8px;
             margin-bottom: 10px;
-            border: 1px solid #fff;
+            border: 1px solid #ffffff;
         }
         
         #recently.tool-list li {
@@ -88,16 +109,11 @@
             align-items: center;
             padding: 2px 5px;
             margin: 2px 0;
-            background-color: #f4f4f4;
         }
         
-        #recently.tool-list .tool-link:hover {
+        #recently .tool-link:hover {
             text-decoration: underline;
-            background-color: #6bff6b;
-        }
-        
-        #recently.tool-list li.pinned {
-            background-color: #f4f4f4;
+            background-color: #ffffff;
         }
         
         .tool-actions {
@@ -142,27 +158,30 @@
 </head>
 <body>
     <div class="header">
-        <h1>&#9774 toollist</h1>
+        <h1>&#9774 lottool</h1>
     </div>
     
     <div class="tools-grid">
         <div class="tool-category">
-            <h2>最近使用的工具</h2>
+            <h2><a href="#" class="category-link" id="recently-tools">文本工具</a></h2>
             <ul class="tool-list" id="recently">
             </ul>
         </div>
         
         <div class="tool-category">
-            <h2>文本工具</h2>
+            <h2><a href="#" class="category-link" id="text-tools">文本工具</a></h2>
             <ul class="tool-list">
-                <li><a href="#" class="tool-link" id="text-counter">字数统计</a></li>
+                <li>
+                    <a href="#" class="tool-link" id="text-counter">字数统计</a>
+                    <a href="#" class="tool-link append" id="text-compare">文本对比</a>
+                    <a href="#" class="tool-link append" id="text-editor">文本编辑</a>
+                </li>
                 <li><a href="#" class="tool-link" id="text-converter">大小写转换</a></li>
-                <li><a href="#" class="tool-link" id="text-diff">文本对比</a></li>
             </ul>
         </div>
         
         <div class="tool-category">
-            <h2>编码工具</h2>
+            <h2><a href="#" class="category-link" id="encrypt-tools">编码工具</a></h2>
             <ul class="tool-list">
                 <li><a href="#" class="tool-link" id="base64">Base64 编码/解码</a></li>
                 <li><a href="#" class="tool-link" id="url-encode">URL 编码/解码</a></li>
@@ -174,7 +193,7 @@
         </div>
         
         <div class="tool-category">
-            <h2>图片工具</h2>
+            <h2><a href="#" class="category-link" id="image-tools">图片处理</a></h2>
             <ul class="tool-list">
                 <li><a href="#" class="tool-link" id="image-compress">图片压缩</a></li>
                 <li><a href="#" class="tool-link" id="image-convert">图片格式转换</a></li>
@@ -183,16 +202,18 @@
         </div>
         
         <div class="tool-category">
-            <h2>开发工具</h2>
+            <h2><a href="#" class="category-link" id="deveplor-tools">开发工具</a></h2>
             <ul class="tool-list">
-                <li><a href="tools/html_editor/index.html" class="tool-link" id="html_editor">HTML 编辑</a></li>
-                <li><a href="tools/writer/index.html" class="tool-link" id="writer">Text 编辑</a></li>
+                <li>
+                    <a href="tools/html_editor/index.html" class="tool-link" id="html_editor">HTML 编辑</a>
+                    <a href="tools/writer/index.html" class="tool-link append" id="writer">Text 编辑</a>
+                </li>
                 <li><a href="tools/flowchart/index.html" class="tool-link" id="flowchart">flowchart 流程图</a></li>
             </ul>
         </div>
 
         <div class="tool-category">
-            <h2>AI工具</h2>
+            <h2><a href="#" class="category-link" id="ai-tools">AI工具</a></h2>
             <ul class="tool-list">
                 <li><a href="#" class="tool-link" id="bg-remove">图片去背景</a></li>
             </ul>
@@ -263,7 +284,7 @@
             recentlyTools.forEach(tool => {
                 const a = document.createElement('a');
                 a.href = tool.url;
-                a.class = 'tool-link';
+                a.className = 'tool-link';
                 a.id = tool.id;
                 a.textContent = tool.text;
                 a.onclick = (e) => {
