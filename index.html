@@ -219,20 +219,20 @@
 
         function addRecentlyTool(toolId, toolUrl, toolText) {
             let recentlyTools = JSON.parse(localStorage.getItem('recentlyTools') || '[]');
-            const tool = recentlyTools.find(tool => tool.id === toolId);
+            const pinned = recentlyTools.filter(tool => tool.pinned === true);
+            const tool = pinned.find(tool => tool.id === toolId);
             if (tool !== undefined) {
                 return;
             }
-            recentlyTools.push({
+            let unpinned = recentlyTools.filter(tool => tool.pinned !== true && tool.id !== toolId);
+            unpinned.unshift({
                 id: toolId,
                 url: toolUrl,
                 text: toolText,
                 pinned: false,
                 timestamp: new Date().toDateString(),
             });
-            const pinned = recentlyTools.filter(tool => tool.pinned === true);
-            let unpinned = recentlyTools.filter(tool => tool.pinned !== true);
-            unpinned = unpinned.slice(-5);
+            unpinned = unpinned.slice(0, 5);
             recentlyTools = [...pinned, ...unpinned];             
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
@@ -247,14 +247,16 @@
 
         function onRecentlyToolPinClick(toolId) {
             let recentlyTools = JSON.parse(localStorage.getItem("recentlyTools") || '[]');
+            let pinned = recentlyTools.filter(tool => tool.pinned === true && tool.id !== toolId);
+            let unpinned = recentlyTools.filter(tool => tool.pinned !== true && tool.id !== toolId);
             let tool = recentlyTools.find(tool => tool.id === toolId);
             tool.pinned = !tool.pinned;
-            const pinned = recentlyTools.filter(tool => tool.pinned === true);
-            let unpinned = recentlyTools.filter(tool => tool.pinned !== true && tool.id !== toolId);
-            if (!tool.pinned) {
-                unpinned.push(tool);
+            if (tool.pinned) {
+                pinned.unshift(tool);
+            } else {
+                unpinned.unshift(tool);
             }
-            unpinned = unpinned.slice(-5);
+            unpinned = unpinned.slice(0, 5);
             recentlyTools = [...pinned, ...unpinned];
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
