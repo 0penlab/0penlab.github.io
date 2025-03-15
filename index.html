@@ -296,6 +296,7 @@
                 a.onclick = (e) => {
                     e.preventDefault();
                     onToolLinkClick(tool.id, tool.url, tool.text);
+                    addRecentlyTool(tool.id, tool.url, tool.text);
                 };
 
                 const pinBtn = document.createElement('button');
