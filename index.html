@@ -226,14 +226,14 @@
                 return;
             }
             let unpinned = recentlyTools.filter(tool => tool.pinned !== true && tool.id !== toolId);
-            unpinned.push({
+            unpinned.unshift({
                 id: toolId,
                 url: toolUrl,
                 text: toolText,
                 pinned: false,
                 timestamp: new Date().toDateString(),
             });
-            unpinned = unpinned.slice(-5);
+            unpinned = unpinned.slice(0, 5);
             recentlyTools = [...pinned, ...unpinned];             
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
@@ -266,9 +266,9 @@
             if (tool.pinned) {
                 pinned.push(tool);
             } else {
-                unpinned.push(tool);
+                unpinned.unshift(tool);
             }
-            unpinned = unpinned.slice(-5);
+            unpinned = unpinned.slice(0, 5);
             recentlyTools = [...pinned, ...unpinned];
             localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
             updateRecentlyTools();
