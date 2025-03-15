@@ -118,7 +118,7 @@
             align-items: baseline;
         }
         
-        .pin-btn, .delete-btn {
+        .pin-btn, .delete-btn, .up-btn {
             color: #666;
             cursor: pointer;
             font-size: 12px;
@@ -245,6 +245,17 @@
             updateRecentlyTools();
         }
 
+        function onRecentlyToolUpClick(toolId) {
+            let recentlyTools = JSON.parse(localStorage.getItem("recentlyTools") || '[]');
+            const index = recentlyTools.findIndex(tool => tool.id === toolId);
+            if (index === 0) {
+                return;
+            }
+            [recentlyTools[index], recentlyTools[index - 1]] = [recentlyTools[index - 1], recentlyTools[index]];
+            localStorage.setItem("recentlyTools", JSON.stringify(recentlyTools));
+            updateRecentlyTools();
+        }
+
         function onRecentlyToolPinClick(toolId) {
             let recentlyTools = JSON.parse(localStorage.getItem("recentlyTools") || '[]');
             let pinned = recentlyTools.filter(tool => tool.pinned === true && tool.id !== toolId);
@@ -252,7 +263,7 @@
             let tool = recentlyTools.find(tool => tool.id === toolId);
             tool.pinned = !tool.pinned;
             if (tool.pinned) {
-                pinned.unshift(tool);
+                pinned.push(tool);
             } else {
                 unpinned.unshift(tool);
             }
@@ -306,10 +317,24 @@
                     onRecentlyToolRemoveClick(tool.id);
                 };
 
+                const upBtn = document.createElement('button');
+                upBtn.textContent = '🡑';
+                upBtn.className = 'up-btn';
+                upBtn.title = '向上';
+                upBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onRecentlyToolUpClick(tool.id);
+                };
+
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'tool-actions';
                 actionsDiv.appendChild(pinBtn);
-                actionsDiv.appendChild(deleteBtn);
+                if (tool.pinned) {
+                    actionsDiv.appendChild(upBtn);
+                } else {
+                    actionsDiv.appendChild(deleteBtn);
+                }
 
                 const li = document.createElement('li');
                 li.appendChild(a);
