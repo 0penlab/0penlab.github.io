@@ -389,7 +389,7 @@
         
         try {
           const schema = JSON.parse(schemaArea.value);
-          const ajv = new window.Ajv();
+          const ajv = new Ajv();
           const validate = ajv.compile(schema);
           const valid = validate(json);
           
