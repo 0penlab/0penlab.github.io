@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Viewer & Editor with Schema Validation</title>
+  <script src="ajv7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    
+    body, html {
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+    
+    .header {
+      background-color: #2c3e50;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    
+    .btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-left: 10px;
+      font-size: 14px;
+    }
+    
+    .btn:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-success {
+      background-color: #27ae60;
+    }
+    
+    .btn-success:hover {
+      background-color: #219653;
+    }
+    
+    .tab-container {
+      display: flex;
+      background-color: #34495e;
+    }
+    
+    .tab {
+      padding: 8px 15px;
+      color: #bdc3c7;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .tab.active {
+      background-color: #f5f5f5;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+    
+    .editor-container {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .panel-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor, .viewer, .schema-editor {
+      flex: 1;
+      overflow: auto;
+      padding: 10px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      resize: none;
+    }
+    
+    .editor, .schema-editor {
+      background-color: #fff;
+      border: none;
+      outline: none;
+      white-space: pre;
+      tab-size: 2;
+    }
+    
+    .schema-editor {
+      display: none;
+      height: 100%;
+    }
+    
+    .viewer {
+      background-color: #fff;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .resizer {
+      width: 5px;
+      height: 100%;
+      background-color: #ddd;
+      cursor: col-resize;
+    }
+    
+    .message-container {
+      max-height: 100px;
+      overflow-y: auto;
+      background-color: #f9f9f9;
+      border-top: 1px solid #ddd;
+    }
+    
+    .error-msg {
+      color: #e74c3c;
+      background-color: #fadbd8;
+      padding: 5px 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #f5b8b1;
+      word-break: break-word;
+    }
+    
+    .success-msg {
+      color: #27ae60;
+      background-color: #d5f5e3;
+      padding: 5px 10px;
+      font-size: 14px;
+      border-bottom: 1px solid #abebc6;
+    }
+    
+    .string { color: #27ae60; }
+    .number { color: #2980b9; }
+    .boolean { color: #8e44ad; }
+    .null { color: #c0392b; }
+    .key { color: #e67e22; }
+    
+    @media (max-width: 768px) {
+      .editor-container {
+        flex-direction: column;
+      }
+      .resizer {
+        width: 100%;
+        height: 5px;
+        cursor: row-resize;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">JSON Viewer & Editor with Schema Validation</div>
+      <div>
+        <button class="btn" id="formatBtn">Format</button>
+        <button class="btn" id="compressBtn">Compress</button>
+        <button class="btn" id="clearBtn">Clear</button>
+        <button class="btn btn-success" id="validateBtn">Validate</button>
+      </div>
+    </div>
+    
+    <div class="tab-container">
+      <div class="tab active" data-target="json">JSON</div>
+      <div class="tab" data-target="schema">JSON Schema</div>
+    </div>
+    
+    <div class="editor-container">
+      <div class="panel-container">
+        <textarea class="editor" id="jsonEditor" placeholder="Enter your JSON here..."></textarea>
+        <textarea class="schema-editor" id="schemaEditor" placeholder="Enter your JSON Schema here..."></textarea>
+        <div class="message-container" id="messageContainer"></div>
+      </div>
+      <div class="resizer" id="resizer"></div>
+      <div class="viewer" id="jsonViewer"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const editor = document.getElementById('jsonEditor');
+      const schemaEditor = document.getElementById('schemaEditor');
+      const viewer = document.getElementById('jsonViewer');
+      const resizer = document.getElementById('resizer');
+      const messageContainer = document.getElementById('messageContainer');
+      const formatBtn = document.getElementById('formatBtn');
+      const compressBtn = document.getElementById('compressBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const validateBtn = document.getElementById('validateBtn');
+      const tabs = document.querySelectorAll('.tab');
+      
+      let isResizing = false;
+      let initialPos = 0;
+      let initialWidth = 0;
+      let currentTab = 'json';
+      
+      // Sample JSON for first load
+      const sampleJson = {
+        "name": "JSON Viewer & Editor",
+        "version": "1.0.0",
+        "description": "A simple JSON viewer and editor with schema validation",
+        "features": [
+          "View JSON",
+          "Edit JSON",
+          "Format JSON",
+          "Compress JSON",
+          "Validate with JSON Schema"
+        ],
+        "author": {
+          "name": "Developer",
+          "email": "dev@example.com"
+        },
+        "isOpenSource": true,
+        "stars": 42
+      };
+      
+      // Sample JSON Schema
+      const sampleSchema = {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "required": ["name", "version", "description"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "author": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          },
+          "isOpenSource": {
+            "type": "boolean"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      };
+      
+      editor.value = JSON.stringify(sampleJson, null, 2);
+      schemaEditor.value = JSON.stringify(sampleSchema, null, 2);
+      updateViewer(editor.value);
+      
+      // Update the viewer with formatted JSON
+      function updateViewer(jsonText) {
+        try {
+          if (!jsonText.trim()) {
+            viewer.innerHTML = '';
+            return;
+          }
+          
+          const parsedJson = JSON.parse(jsonText);
+          const formattedJson = syntaxHighlight(JSON.stringify(parsedJson, null, 2));
+          viewer.innerHTML = formattedJson;
+        } catch (e) {
+          addMessage(`Parsing Error: ${e.message}`, 'error');
+        }
+      }
+      
+      // Syntax highlighting
+      function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, 
+          function (match) {
+            let cls = 'number';
+            if (/^"/.test(match)) {
+              if (/:$/.test(match)) {
+                cls = 'key';
+                match = match.replace(':', '');
+              } else {
+                cls = 'string';
+              }
+            } else if (/true|false/.test(match)) {
+              cls = 'boolean';
+            } else if (/null/.test(match)) {
+              cls = 'null';
+            }
+            
+            if (cls === 'key') {
+              return '<span class="' + cls + '">' + match + '</span>:';
+            } else {
+              return '<span class="' + cls + '">' + match + '</span>';
+            }
+          }
+        );
+      }
+      
+      // Format JSON
+      function formatJson() {
+        const activeEditor = currentTab === 'json' ? editor : schemaEditor;
+        try {
+          const jsonText = activeEditor.value;
+          if (!jsonText.trim()) return;
+          
+          const parsedJson = JSON.parse(jsonText);
+          activeEditor.value = JSON.stringify(parsedJson, null, 2);
+          
+          if (currentTab === 'json') {
+            updateViewer(activeEditor.value);
+          }
+        } catch (e) {
+          addMessage(`Formatting Error: ${e.message}`, 'error');
+        }
+      }
+      
+      // Compress JSON
+      function compressJson() {
+        const activeEditor = currentTab === 'json' ? editor : schemaEditor;
+        try {
+          const jsonText = activeEditor.value;
+          if (!jsonText.trim()) return;
+          
+          const parsedJson = JSON.parse(jsonText);
+          activeEditor.value = JSON.stringify(parsedJson);
+          
+          if (currentTab === 'json') {
+            updateViewer(activeEditor.value);
+          }
+        } catch (e) {
+          addMessage(`Compression Error: ${e.message}`, 'error');
+        }
+      }
+      
+      // Validate JSON against schema
+      function validateJson() {
+        try {
+          // Clear previous messages
+          messageContainer.innerHTML = '';
+          
+          // Parse JSON and schema
+          const jsonText = editor.value;
+          const schemaText = schemaEditor.value;
+          
+          if (!jsonText.trim() || !schemaText.trim()) {
+            addMessage('Both JSON and schema are required for validation', 'error');
+            return;
+          }
+          
+          const jsonData = JSON.parse(jsonText);
+          const schema = JSON.parse(schemaText);
+          
+          // Initialize Ajv
+          const ajv = new Ajv({allErrors: true});
+          const validate = ajv.compile(schema);
+          const valid = validate(jsonData);
+          
+          if (valid) {
+            addMessage('Validation successful! JSON conforms to the schema.', 'success');
+          } else {
+            addMessage('Validation failed!', 'error');
+            validate.errors.forEach(error => {
+              let msg = `${error.instancePath} ${error.message}`;
+              if (error.params) {
+                const params = Object.entries(error.params)
+                  .map(([key, value]) => `${key}: ${value}`)
+                  .join(', ');
+                msg += ` (${params})`;
+              }
+              addMessage(msg, 'error');
+            });
+          }
+        } catch (e) {
+          addMessage(`Validation Error: ${e.message}`, 'error');
+        }
+      }
+      
+      // Add message to the message container
+      function addMessage(message, type) {
+        const msgElement = document.createElement('div');
+        msgElement.className = type === 'error' ? 'error-msg' : 'success-msg';
+        msgElement.textContent = message;
+        messageContainer.appendChild(msgElement);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+      }
+      
+      // Initialize resizer
+      function initResizer() {
+        const container = document.querySelector('.editor-container');
+        const isHorizontal = window.innerWidth > 768;
+        
+        resizer.addEventListener('mousedown', function(e) {
+          isResizing = true;
+          initialPos = isHorizontal ? e.clientX : e.clientY;
+          
+          const panelRect = document.querySelector('.panel-container').getBoundingClientRect();
+          initialWidth = isHorizontal ? panelRect.width : panelRect.height;
+          
+          document.addEventListener('mousemove', resize);
+          document.addEventListener('mouseup', stopResize);
+        });
+        
+        function resize(e) {
+          if (!isResizing) return;
+          
+          const containerRect = container.getBoundingClientRect();
+          const containerSize = isHorizontal ? containerRect.width : containerRect.height;
+          const pos = isHorizontal ? e.clientX : e.clientY;
+          const diff = pos - initialPos;
+          
+          const newSize = Math.max(50, Math.min(initialWidth + diff, containerSize - 50));
+          const percentage = (newSize / containerSize) * 100;
+          
+          if (isHorizontal) {
+            document.querySelector('.panel-container').style.flex = `0 0 ${percentage}%`;
+          } else {
+            document.querySelector('.panel-container').style.flex = `0 0 ${percentage}%`;
+          }
+        }
+        
+        function stopResize() {
+          isResizing = false;
+          document.removeEventListener('mousemove', resize);
+          document.removeEventListener('mouseup', stopResize);
+        }
+      }
+      
+      // Switch between JSON and Schema editors
+      function switchTab(tabName) {
+        currentTab = tabName;
+        tabs.forEach(tab => {
+          if (tab.dataset.target === tabName) {
+            tab.classList.add('active');
+          } else {
+            tab.classList.remove('active');
+          }
+        });
+        
+        if (tabName === 'json') {
+          editor.style.display = 'block';
+          schemaEditor.style.display = 'none';
+          updateViewer(editor.value);
+        } else {
+          editor.style.display = 'none';
+          schemaEditor.style.display = 'block';
+          updateViewer(schemaEditor.value);
+        }
+      }
+      
+      // Event listeners
+      editor.addEventListener('input', function() {
+        updateViewer(this.value);
+      });
+      
+      formatBtn.addEventListener('click', formatJson);
+      compressBtn.addEventListener('click', compressJson);
+      clearBtn.addEventListener('click', function() {
+        if (currentTab === 'json') {
+          editor.value = '';
+          viewer.innerHTML = '';
+        } else {
+          schemaEditor.value = '';
+        }
+        messageContainer.innerHTML = '';
+      });
+      validateBtn.addEventListener('click', validateJson);
+      
+      tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          switchTab(this.dataset.target);
+        });
+      });
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        initResizer();
+      });
+      
+      // Initialize
+      initResizer();
+      updateViewer(editor.value);
+    });
+  </script>
+</body>
+</html>
