@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件压缩解压工具</title>
+    <script src="jszip.min.js"></script>
+    <script src="FileSaver.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        body {
+            padding: 20px;
+            background-color: #f9f9f9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            flex: 1;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            border-bottom: 2px solid #1890ff;
+            color: #1890ff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        input[type="file"],
+        input[type="text"],
+        input[type="number"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #096dd9;
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .progress {
+            height: 100%;
+            background-color: #1890ff;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .file-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .file-item {
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        .status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文件压缩解压工具</h1>
+        
+        <div class="tabs">
+            <div class="tab active" id="tab-compress">压缩</div>
+            <div class="tab" id="tab-extract">解压</div>
+        </div>
+        
+        <div class="tab-content active" id="content-compress">
+            <div class="form-group">
+                <label for="compress-files">选择要压缩的文件</label>
+                <input type="file" id="compress-files" multiple>
+            </div>
+            
+            <div class="file-list" id="compress-file-list"></div>
+            
+            <div class="form-group">
+                <label for="compress-password">设置密码（可选）</label>
+                <input type="password" id="compress-password" placeholder="不设置则不使用密码">
+            </div>
+            
+            <div class="form-group">
+                <label for="compress-size">分卷大小（MB）</label>
+                <input type="number" id="compress-size" min="1" value="50">
+            </div>
+            
+            <button id="compress-button">开始压缩</button>
+            
+            <div class="progress-bar">
+                <div class="progress" id="compress-progress"></div>
+            </div>
+            
+            <div class="status" id="compress-status"></div>
+        </div>
+        
+        <div class="tab-content" id="content-extract">
+            <div class="form-group">
+                <label for="extract-file">选择要解压的文件</label>
+                <input type="file" id="extract-file">
+            </div>
+            
+            <div class="form-group">
+                <label for="extract-password">解压密码（如果有）</label>
+                <input type="password" id="extract-password" placeholder="如果文件有密码，请在此输入">
+            </div>
+            
+            <button id="extract-button">开始解压</button>
+            
+            <div class="progress-bar">
+                <div class="progress" id="extract-progress"></div>
+            </div>
+            
+            <div class="status" id="extract-status"></div>
+            
+            <div class="file-list" id="extract-file-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 选项卡切换功能
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const contentId = 'content-' + tab.id.split('-')[1];
+                document.getElementById(contentId).classList.add('active');
+            });
+        });
+
+        // 压缩功能
+        const compressFiles = document.getElementById('compress-files');
+        const compressFileList = document.getElementById('compress-file-list');
+        const compressPassword = document.getElementById('compress-password');
+        const compressSize = document.getElementById('compress-size');
+        const compressButton = document.getElementById('compress-button');
+        const compressProgress = document.getElementById('compress-progress');
+        const compressStatus = document.getElementById('compress-status');
+
+        // 更新选择的文件列表
+        compressFiles.addEventListener('change', () => {
+            compressFileList.innerHTML = '';
+            let totalSize = 0;
+            
+            for (const file of compressFiles.files) {
+                const item = document.createElement('div');
+                item.className = 'file-item';
+                item.textContent = `${file.name} (${formatSize(file.size)})`;
+                compressFileList.appendChild(item);
+                totalSize += file.size;
+            }
+            
+            if (compressFiles.files.length > 0) {
+                const summary = document.createElement('div');
+                summary.className = 'file-item';
+                summary.style.fontWeight = 'bold';
+                summary.style.marginTop = '10px';
+                summary.textContent = `共 ${compressFiles.files.length} 个文件，总计 ${formatSize(totalSize)}`;
+                compressFileList.appendChild(summary);
+            }
+        });
+
+        // 压缩操作
+        compressButton.addEventListener('click', async () => {
+            if (compressFiles.files.length === 0) {
+                alert('请选择要压缩的文件');
+                return;
+            }
+
+            const maxSizeBytes = compressSize.value * 1024 * 1024;
+            const password = compressPassword.value;
+            
+            compressStatus.textContent = '准备压缩...';
+            compressProgress.style.width = '0%';
+            
+            try {
+                const zip = new JSZip();
+                
+                // 添加文件到压缩包
+                for (let i = 0; i < compressFiles.files.length; i++) {
+                    const file = compressFiles.files[i];
+                    const fileData = await readFileAsArrayBuffer(file);
+                    
+                    zip.file(file.name, fileData);
+                    
+                    // 更新进度
+                    const progress = ((i + 1) / compressFiles.files.length * 50);
+                    compressProgress.style.width = progress + '%';
+                    compressStatus.textContent = `正在添加文件: ${i + 1}/${compressFiles.files.length}`;
+                }
+                
+                // 生成压缩文件
+                compressStatus.textContent = '正在压缩文件...';
+                
+                const options = {};
+                if (password) {
+                    options.password = password;
+                }
+                
+                const zipBlob = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 9
+                    },
+                    streamFiles: true,
+                    password: password || undefined
+                }, (metadata) => {
+                    const progress = 50 + (metadata.percent / 2);
+                    compressProgress.style.width = progress + '%';
+                    compressStatus.textContent = `正在压缩: ${Math.round(metadata.percent)}%`;
+                });
+                
+                // 处理分卷
+                if (zipBlob.size <= maxSizeBytes) {
+                    // 不需要分卷
+                    saveAs(zipBlob, 'compressed_files.zip');
+                    compressStatus.textContent = '压缩完成！';
+                } else {
+                    // 需要分卷
+                    const parts = Math.ceil(zipBlob.size / maxSizeBytes);
+                    compressStatus.textContent = `文件较大，正在分卷(共${parts}卷)...`;
+                    
+                    for (let i = 0; i < parts; i++) {
+                        const start = i * maxSizeBytes;
+                        const end = Math.min(start + maxSizeBytes, zipBlob.size);
+                        const partBlob = zipBlob.slice(start, end);
+                        
+                        saveAs(partBlob, `compressed_files.z${(i+1).toString().padStart(2, '0')}`);
+                        
+                        compressProgress.style.width = ((i + 1) / parts * 100) + '%';
+                        compressStatus.textContent = `正在生成分卷: ${i + 1}/${parts}`;
+                    }
+                    
+                    compressStatus.textContent = `压缩完成！文件已分为 ${parts} 个分卷。`;
+                }
+                
+                compressProgress.style.width = '100%';
+                
+            } catch (error) {
+                compressStatus.textContent = '压缩失败: ' + error.message;
+                console.error(error);
+            }
+        });
+
+        // 解压功能
+        const extractFile = document.getElementById('extract-file');
+        const extractPassword = document.getElementById('extract-password');
+        const extractButton = document.getElementById('extract-button');
+        const extractProgress = document.getElementById('extract-progress');
+        const extractStatus = document.getElementById('extract-status');
+        const extractFileList = document.getElementById('extract-file-list');
+
+        // 解压操作
+        extractButton.addEventListener('click', async () => {
+            if (!extractFile.files[0]) {
+                alert('请选择要解压的文件');
+                return;
+            }
+
+            const file = extractFile.files[0];
+            const password = extractPassword.value;
+            
+            extractStatus.textContent = '正在读取文件...';
+            extractProgress.style.width = '0%';
+            extractFileList.innerHTML = '';
+            
+            try {
+                const fileData = await readFileAsArrayBuffer(file);
+                
+                extractStatus.textContent = '正在解压文件...';
+                
+                const zip = new JSZip();
+                const options = {};
+                if (password) {
+                    options.password = password;
+                }
+                
+                await zip.loadAsync(fileData, options)
+                    .catch(error => {
+                        if (error.message.includes('Bad password')) {
+                            throw new Error('密码错误');
+                        }
+                        throw error;
+                    });
+                
+                extractStatus.textContent = '解压成功，准备文件...';
+                
+                // 显示解压出的文件列表
+                const files = Object.keys(zip.files);
+                extractFileList.innerHTML = '<div class="file-item" style="font-weight: bold">解压出的文件列表：</div>';
+                
+                let i = 0;
+                const fileObjects = [];
+                
+                for (const fileName of files) {
+                    const zipObj = zip.files[fileName];
+                    
+                    if (!zipObj.dir) {
+                        const item = document.createElement('div');
+                        item.className = 'file-item';
+                        
+                        // 创建下载链接
+                        const link = document.createElement('a');
+                        link.textContent = fileName;
+                        link.href = '#';
+                        link.style.color = '#1890ff';
+                        link.style.textDecoration = 'none';
+                        link.title = '点击下载此文件';
+                        
+                        fileObjects.push({
+                            name: fileName,
+                            object: zipObj
+                        });
+                        
+                        const index = i;
+                        link.addEventListener('click', async (e) => {
+                            e.preventDefault();
+                            extractStatus.textContent = `正在准备下载: ${fileName}`;
+                            const blob = await fileObjects[index].object.async('blob');
+                            saveAs(blob, fileName.split('/').pop());
+                            extractStatus.textContent = `文件 ${fileName} 已下载`;
+                        });
+                        
+                        item.appendChild(link);
+                        extractFileList.appendChild(item);
+                        i++;
+                    }
+                }
+                
+                if (fileObjects.length === 0) {
+                    extractFileList.innerHTML += '<div class="file-item">没有找到文件</div>';
+                } else {
+                    // 创建全部下载的按钮
+                    const downloadAllBtn = document.createElement('button');
+                    downloadAllBtn.textContent = '下载全部文件';
+                    downloadAllBtn.style.marginTop = '10px';
+                    
+                    downloadAllBtn.addEventListener('click', async () => {
+                        for (let i = 0; i < fileObjects.length; i++) {
+                            const fileObj = fileObjects[i];
+                            extractStatus.textContent = `正在下载: ${fileObj.name} (${i+1}/${fileObjects.length})`;
+                            extractProgress.style.width = ((i + 1) / fileObjects.length * 100) + '%';
+                            
+                            const blob = await fileObj.object.async('blob');
+                            saveAs(blob, fileObj.name.split('/').pop());
+                            
+                            // 小延迟，避免浏览器卡顿
+                            await new Promise(resolve => setTimeout(resolve, 300));
+                        }
+                        
+                        extractStatus.textContent = '所有文件已下载完成';
+                    });
+                    
+                    extractFileList.appendChild(downloadAllBtn);
+                }
+                
+                extractProgress.style.width = '100%';
+                extractStatus.textContent = `解压完成，共 ${fileObjects.length} 个文件`;
+                
+            } catch (error) {
+                extractStatus.textContent = '解压失败: ' + error.message;
+                extractProgress.style.width = '0%';
+                console.error(error);
+            }
+        });
+
+        // 工具函数：读取文件为ArrayBuffer
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e.target.error);
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // 工具函数：格式化文件大小
+        function formatSize(bytes) {
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let size = bytes;
+            let unitIndex = 0;
+            
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
+            
+            return `${size.toFixed(2)} ${units[unitIndex]}`;
+        }
+    </script>
+</body>
+</html>
